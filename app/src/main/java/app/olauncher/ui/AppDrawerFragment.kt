@@ -19,7 +19,6 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentAppDrawerBinding
 import app.olauncher.helper.hideKeyboard
-import app.olauncher.helper.isEinkDisplay
 import app.olauncher.helper.isSystemApp
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.showKeyboard
@@ -169,9 +168,6 @@ class AppDrawerFragment : Fragment() {
         binding.recyclerView.adapter = adapter
         binding.recyclerView.addOnScrollListener(getRecyclerViewOnScrollListener())
         binding.recyclerView.itemAnimator = null
-        if (requireContext().isEinkDisplay().not())
-            binding.recyclerView.layoutAnimation =
-                AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_anim_from_bottom)
     }
 
     private fun initObservers() {

@@ -17,7 +17,6 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.ActivityMainBinding
-import app.olauncher.helper.isEinkDisplay
 import app.olauncher.helper.isTablet
 
 class MainActivity : AppCompatActivity() {
@@ -41,7 +40,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         prefs = Prefs(this)
-        if (isEinkDisplay()) prefs.appTheme = AppCompatDelegate.MODE_NIGHT_NO
         AppCompatDelegate.setDefaultNightMode(prefs.appTheme)
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)

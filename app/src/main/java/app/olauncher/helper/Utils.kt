@@ -1,38 +1,23 @@
 package app.olauncher.helper
 
 import android.annotation.SuppressLint
-import android.app.SearchManager
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherApps
-import android.content.res.Configuration
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Matrix
-import android.graphics.Paint
-import android.graphics.Point
 import android.net.Uri
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.AlarmClock
 import android.provider.CalendarContract
 import android.provider.MediaStore
-import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.util.TypedValue
-import android.view.View
 import android.view.WindowManager
-import android.view.animation.LinearInterpolator
 import android.widget.Toast
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
-import androidx.appcompat.app.AppCompatDelegate
 import app.olauncher.BuildConfig
 import app.olauncher.R
 import app.olauncher.data.AppModel
@@ -40,25 +25,13 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.io.InputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.text.Collator
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.Scanner
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 fun Context.showToast(message: String?, duration: Int = Toast.LENGTH_SHORT) {
     if (message.isNullOrBlank()) return
     Toast.makeText(this, message, duration).show()
-}
-
-fun Context.showToast(stringResource: Int, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(this, getString(stringResource), duration).show()
 }
 
 suspend fun getAppsList(
