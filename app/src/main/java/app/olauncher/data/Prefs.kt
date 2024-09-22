@@ -8,12 +8,6 @@ import androidx.appcompat.app.AppCompatDelegate
 class Prefs(context: Context) {
     private val PREFS_FILENAME = "app.olauncher"
 
-    private val FIRST_OPEN = "FIRST_OPEN"
-    private val FIRST_OPEN_TIME = "FIRST_OPEN_TIME"
-    private val FIRST_SETTINGS_OPEN = "FIRST_SETTINGS_OPEN"
-    private val FIRST_HIDE = "FIRST_HIDE"
-    private val USER_STATE = "USER_STATE"
-    private val LOCK_MODE = "LOCK_MODE"
     private val HOME_APPS_NUM = "HOME_APPS_NUM"
     private val AUTO_SHOW_KEYBOARD = "AUTO_SHOW_KEYBOARD"
     private val KEYBOARD_MESSAGE = "KEYBOARD_MESSAGE"
@@ -24,17 +18,11 @@ class Prefs(context: Context) {
     private val DATE_TIME_VISIBILITY = "DATE_TIME_VISIBILITY"
     private val SWIPE_LEFT_ENABLED = "SWIPE_LEFT_ENABLED"
     private val SWIPE_RIGHT_ENABLED = "SWIPE_RIGHT_ENABLED"
-    private val SCREEN_TIMEOUT = "SCREEN_TIMEOUT"
     private val HIDDEN_APPS = "HIDDEN_APPS"
     private val HIDDEN_APPS_UPDATED = "HIDDEN_APPS_UPDATED"
-    private val SHOW_HINT_COUNTER = "SHOW_HINT_COUNTER"
     private val APP_THEME = "APP_THEME"
-    private val ABOUT_CLICKED = "ABOUT_CLICKED"
-    private val RATE_CLICKED = "RATE_CLICKED"
-    private val SHARE_SHOWN_TIME = "SHARE_SHOWN_TIME"
     private val SWIPE_DOWN_ACTION = "SWIPE_DOWN_ACTION"
     private val TEXT_SIZE_SCALE = "TEXT_SIZE_SCALE"
-    private val HIDE_DIGITAL_WELLBEING = "HIDE_DIGITAL_WELLBEING"
 
     private val APP_NAME_1 = "APP_NAME_1"
     private val APP_NAME_2 = "APP_NAME_2"
@@ -84,31 +72,7 @@ class Prefs(context: Context) {
     private val CALENDAR_APP_USER = "CALENDAR_APP_USER"
     private val CALENDAR_APP_CLASS_NAME = "CALENDAR_APP_CLASS_NAME"
 
-    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0);
-
-    var firstOpen: Boolean
-        get() = prefs.getBoolean(FIRST_OPEN, true)
-        set(value) = prefs.edit().putBoolean(FIRST_OPEN, value).apply()
-
-    var firstOpenTime: Long
-        get() = prefs.getLong(FIRST_OPEN_TIME, 0L)
-        set(value) = prefs.edit().putLong(FIRST_OPEN_TIME, value).apply()
-
-    var firstSettingsOpen: Boolean
-        get() = prefs.getBoolean(FIRST_SETTINGS_OPEN, true)
-        set(value) = prefs.edit().putBoolean(FIRST_SETTINGS_OPEN, value).apply()
-
-    var firstHide: Boolean
-        get() = prefs.getBoolean(FIRST_HIDE, true)
-        set(value) = prefs.edit().putBoolean(FIRST_HIDE, value).apply()
-
-    var userState: String
-        get() = prefs.getString(USER_STATE, Constants.UserState.START).toString()
-        set(value) = prefs.edit().putString(USER_STATE, value).apply()
-
-    var lockModeOn: Boolean
-        get() = prefs.getBoolean(LOCK_MODE, false)
-        set(value) = prefs.edit().putBoolean(LOCK_MODE, value).apply()
+    private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_FILENAME, 0)
 
     var autoShowKeyboard: Boolean
         get() = prefs.getBoolean(AUTO_SHOW_KEYBOARD, true)
@@ -158,14 +122,6 @@ class Prefs(context: Context) {
         get() = prefs.getFloat(TEXT_SIZE_SCALE, 1.0f)
         set(value) = prefs.edit().putFloat(TEXT_SIZE_SCALE, value).apply()
 
-    var hideDigitalWellbeing: Boolean
-        get() = prefs.getBoolean(HIDE_DIGITAL_WELLBEING, false)
-        set(value) = prefs.edit().putBoolean(HIDE_DIGITAL_WELLBEING, value).apply()
-
-    var screenTimeout: Int
-        get() = prefs.getInt(SCREEN_TIMEOUT, 30000) // Default: 30 seconds
-        set(value) = prefs.edit().putInt(SCREEN_TIMEOUT, value).apply()
-
     var hiddenApps: MutableSet<String>
         get() = prefs.getStringSet(HIDDEN_APPS, mutableSetOf()) as MutableSet<String>
         set(value) = prefs.edit().putStringSet(HIDDEN_APPS, value).apply()
@@ -173,22 +129,6 @@ class Prefs(context: Context) {
     var hiddenAppsUpdated: Boolean
         get() = prefs.getBoolean(HIDDEN_APPS_UPDATED, false)
         set(value) = prefs.edit().putBoolean(HIDDEN_APPS_UPDATED, value).apply()
-
-    var toShowHintCounter: Int
-        get() = prefs.getInt(SHOW_HINT_COUNTER, 1)
-        set(value) = prefs.edit().putInt(SHOW_HINT_COUNTER, value).apply()
-
-    var aboutClicked: Boolean
-        get() = prefs.getBoolean(ABOUT_CLICKED, false)
-        set(value) = prefs.edit().putBoolean(ABOUT_CLICKED, value).apply()
-
-    var rateClicked: Boolean
-        get() = prefs.getBoolean(RATE_CLICKED, false)
-        set(value) = prefs.edit().putBoolean(RATE_CLICKED, value).apply()
-
-    var shareShownTime: Long
-        get() = prefs.getLong(SHARE_SHOWN_TIME, 0L)
-        set(value) = prefs.edit().putLong(SHARE_SHOWN_TIME, value).apply()
 
     var swipeDownAction: Int
         get() = prefs.getInt(SWIPE_DOWN_ACTION, Constants.SwipeDownAction.NOTIFICATIONS)

@@ -146,34 +146,6 @@ fun getUserHandleFromString(context: Context, userHandleString: String): UserHan
     return android.os.Process.myUserHandle()
 }
 
-fun isOlauncherDefault(context: Context): Boolean {
-    val launcherPackageName = getDefaultLauncherPackage(context)
-    return BuildConfig.APPLICATION_ID == launcherPackageName
-}
-
-fun getDefaultLauncherPackage(context: Context): String {
-    val intent = Intent()
-    intent.action = Intent.ACTION_MAIN
-    intent.addCategory(Intent.CATEGORY_HOME)
-    val packageManager = context.packageManager
-    val result = packageManager.resolveActivity(intent, 0)
-    return if (result?.activityInfo != null) {
-        result.activityInfo.packageName
-    } else "android"
-}
-
-fun getChangedAppTheme(context: Context, currentAppTheme: Int): Int {
-    return when (currentAppTheme) {
-        AppCompatDelegate.MODE_NIGHT_YES -> AppCompatDelegate.MODE_NIGHT_NO
-        AppCompatDelegate.MODE_NIGHT_NO -> AppCompatDelegate.MODE_NIGHT_YES
-        else -> {
-            if (context.isDarkThemeOn())
-                AppCompatDelegate.MODE_NIGHT_NO
-            else AppCompatDelegate.MODE_NIGHT_YES
-        }
-    }
-}
-
 fun openAppInfo(context: Context, userHandle: UserHandle, packageName: String) {
     val launcher = context.getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
     val intent: Intent? = context.packageManager.getLaunchIntentForPackage(packageName)
@@ -181,37 +153,6 @@ fun openAppInfo(context: Context, userHandle: UserHandle, packageName: String) {
     intent?.let {
         launcher.startAppDetailsActivity(intent.component, userHandle, null, null)
     } ?: context.showToast(context.getString(R.string.unable_to_open_app))
-}
-
-suspend fun getBitmapFromURL(src: String?): Bitmap? {
-    return withContext(Dispatchers.IO) {
-        var bitmap: Bitmap? = null
-        try {
-            val url = URL(src)
-            val connection: HttpURLConnection = url
-                .openConnection() as HttpURLConnection
-            connection.doInput = true
-            connection.connect()
-            val input: InputStream = connection.inputStream
-            bitmap = BitmapFactory.decodeStream(input)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        bitmap
-    }
-}
-
-fun getScreenDimensions(context: Context): Pair<Int, Int> {
-    val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    val point = Point()
-    windowManager.defaultDisplay.getRealSize(point)
-    return Pair(point.x, point.y)
-}
-
-fun openSearch(context: Context) {
-    val intent = Intent(Intent.ACTION_WEB_SEARCH)
-    intent.putExtra(SearchManager.QUERY, "")
-    context.startActivity(intent)
 }
 
 @SuppressLint("WrongConstant", "PrivateApi")
@@ -272,19 +213,6 @@ fun openCalendar(context: Context) {
     }
 }
 
-fun isAccessServiceEnabled(context: Context): Boolean {
-    val enabled = try {
-        Settings.Secure.getInt(context.applicationContext.contentResolver, Settings.Secure.ACCESSIBILITY_ENABLED)
-    } catch (e: Exception) {
-        0
-    }
-    if (enabled == 1) {
-        val enabledServicesString: String? = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
-        return enabledServicesString?.contains(context.packageName + "/" + MyAccessibilityService::class.java.name) ?: false
-    }
-    return false
-}
-
 fun isTablet(context: Context): Boolean {
     val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val metrics = DisplayMetrics()
@@ -294,25 +222,6 @@ fun isTablet(context: Context): Boolean {
     val diagonalInches = sqrt(widthInches.toDouble().pow(2.0) + heightInches.toDouble().pow(2.0))
     if (diagonalInches >= 7.0) return true
     return false
-}
-
-fun Context.isDarkThemeOn(): Boolean {
-    return resources.configuration.uiMode and
-            Configuration.UI_MODE_NIGHT_MASK == UI_MODE_NIGHT_YES
-}
-
-fun Context.copyToClipboard(text: String) {
-    val clipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clipData = ClipData.newPlainText(getString(R.string.app_name), text)
-    clipboardManager.setPrimaryClip(clipData)
-    showToast("")
-}
-
-fun Context.openUrl(url: String) {
-    if (url.isEmpty()) return
-    val intent = Intent(Intent.ACTION_VIEW)
-    intent.data = Uri.parse(url)
-    startActivity(intent)
 }
 
 fun Context.isSystemApp(packageName: String): Boolean {
@@ -341,13 +250,4 @@ fun Context.getColorFromAttr(
 ): Int {
     theme.resolveAttribute(attrColor, typedValue, resolveRefs)
     return typedValue.data
-}
-
-fun View.animateAlpha(alpha: Float = 1.0f) {
-    this.animate().apply {
-        interpolator = LinearInterpolator()
-        duration = 200
-        alpha(alpha)
-        start()
-    }
 }

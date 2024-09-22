@@ -44,7 +44,6 @@ class AppDrawerAdapter(
     }
 
     private var autoLaunch = true
-    private var isBangSearch = false
     private val appFilter = createAppFilter()
     private val myUserHandle = android.os.Process.myUserHandle()
 
@@ -79,7 +78,6 @@ class AppDrawerAdapter(
     private fun createAppFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(charSearch: CharSequence?): FilterResults {
-                isBangSearch = charSearch?.startsWith("!") ?: false
                 autoLaunch = charSearch?.startsWith(" ")?.not() ?: true
 
                 val appFilteredList = (if (charSearch.isNullOrBlank()) appsList
@@ -111,7 +109,6 @@ class AppDrawerAdapter(
         try {
             if (itemCount == 1
                 && autoLaunch
-                && isBangSearch.not()
                 && flag == Constants.FLAG_LAUNCH_APP
                 && appFilteredList.size > 0
             ) appClickListener(appFilteredList[0])

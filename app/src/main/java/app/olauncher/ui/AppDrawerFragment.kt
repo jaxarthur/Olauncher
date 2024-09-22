@@ -22,8 +22,6 @@ import app.olauncher.helper.hideKeyboard
 import app.olauncher.helper.isEinkDisplay
 import app.olauncher.helper.isSystemApp
 import app.olauncher.helper.openAppInfo
-import app.olauncher.helper.openSearch
-import app.olauncher.helper.openUrl
 import app.olauncher.helper.showKeyboard
 import app.olauncher.helper.showToast
 import app.olauncher.helper.uninstall
@@ -81,10 +79,7 @@ class AppDrawerFragment : Fragment() {
     private fun initSearch() {
         binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                if (adapter.itemCount == 0) // && requireContext().searchOnPlayStore(query?.trim()).not())
-                    requireContext().openSearch(query?.trim())
-                else
-                    adapter.launchFirstInList()
+                adapter.launchFirstInList()
                 return true
             }
 
@@ -147,12 +142,6 @@ class AppDrawerFragment : Fragment() {
                 prefs.hiddenApps = newSet
                 if (newSet.isEmpty())
                     findNavController().popBackStack()
-                if (prefs.firstHide) {
-                    binding.search.hideKeyboard()
-                    prefs.firstHide = false
-                    viewModel.showDialog.postValue(Constants.Dialog.HIDDEN)
-                    findNavController().navigate(R.id.action_appListFragment_to_settingsFragment2)
-                }
                 viewModel.getAppList()
                 viewModel.getHiddenApps()
             },
@@ -171,7 +160,7 @@ class AppDrawerFragment : Fragment() {
                 val scrollRange = super.scrollVerticallyBy(dx, recycler, state)
                 val overScroll = dx - scrollRange
                 if (overScroll < -10 && binding.recyclerView.scrollState == RecyclerView.SCROLL_STATE_DRAGGING)
-                    checkMessageAndExit()
+                    exit()
                 return scrollRange
             }
         }
@@ -262,10 +251,8 @@ class AppDrawerFragment : Fragment() {
         }
     }
 
-    private fun checkMessageAndExit() {
+    private fun exit() {
         findNavController().popBackStack()
-        if (flag == Constants.FLAG_LAUNCH_APP)
-            viewModel.checkForMessages.call()
     }
 
     override fun onStart() {

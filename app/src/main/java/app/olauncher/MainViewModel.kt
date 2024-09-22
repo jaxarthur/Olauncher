@@ -8,21 +8,12 @@ import android.os.UserHandle
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.work.BackoffPolicy
-import androidx.work.Constraints
-import androidx.work.ExistingPeriodicWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.PeriodicWorkRequestBuilder
-import androidx.work.WorkManager
 import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
-import app.olauncher.helper.SingleLiveEvent
 import app.olauncher.helper.getAppsList
-import app.olauncher.helper.isOlauncherDefault
 import app.olauncher.helper.showToast
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val appContext by lazy { application.applicationContext }
@@ -34,13 +25,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val updateSwipeApps = MutableLiveData<Any>()
     val appList = MutableLiveData<List<AppModel>?>()
     val hiddenApps = MutableLiveData<List<AppModel>?>()
-    val isOlauncherDefault = MutableLiveData<Boolean>()
-    val launcherResetFailed = MutableLiveData<Boolean>()
     val homeAppAlignment = MutableLiveData<Int>()
-
-    val showDialog = SingleLiveEvent<String>()
-    val checkForMessages = SingleLiveEvent<Unit?>()
-    val resetLauncherLiveData = SingleLiveEvent<Unit?>()
 
     fun selectedApp(appModel: AppModel, flag: Int) {
         when (flag) {
@@ -205,15 +190,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             hiddenApps.value = getAppsList(appContext, prefs, includeRegularApps = false, includeHiddenApps = true)
         }
     }
-
-    fun isOlauncherDefault() {
-        isOlauncherDefault.value = isOlauncherDefault(appContext)
-    }
-
-//    fun resetDefaultLauncherApp(context: Context) {
-//        resetDefaultLauncher(context)
-//        launcherResetFailed.value = getDefaultLauncherPackage(appContext).contains(".")
-//    }
 
     fun updateHomeAlignment(gravity: Int) {
         prefs.homeAlignment = gravity

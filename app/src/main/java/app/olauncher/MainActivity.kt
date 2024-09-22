@@ -9,25 +9,16 @@ import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.view.View
 import android.view.WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.ActivityMainBinding
-import app.olauncher.helper.hasBeenDays
-import app.olauncher.helper.hasBeenHours
-import app.olauncher.helper.isDefaultLauncher
 import app.olauncher.helper.isEinkDisplay
-import app.olauncher.helper.isOlauncherDefault
 import app.olauncher.helper.isTablet
-import app.olauncher.helper.resetLauncherViaFakeActivity
-import app.olauncher.helper.showLauncherSelector
-import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
 
@@ -58,13 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         navController = Navigation.findNavController(this, R.id.nav_host_fragment)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        if (prefs.firstOpen) {
-            viewModel.firstOpen(true)
-            prefs.firstOpen = false
-            prefs.firstOpenTime = System.currentTimeMillis()
-        }
 
-        initObservers(viewModel)
         viewModel.getAppList()
         setupOrientation()
 
@@ -91,18 +76,6 @@ class MainActivity : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(prefs.appTheme)
     }
 
-    private fun initObservers(viewModel: MainViewModel) {
-        viewModel.launcherResetFailed.observe(this) {
-            openLauncherChooser(it)
-        }
-        viewModel.resetLauncherLiveData.observe(this) {
-            if (isDefaultLauncher() || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q)
-                resetLauncherViaFakeActivity()
-            else
-                showLauncherSelector(Constants.REQUEST_CODE_LAUNCHER_SELECTOR)
-        }
-    }
-
     @SuppressLint("SourceLockedOrientationActivity")
     private fun setupOrientation() {
         if (isTablet(this) || Build.VERSION.SDK_INT == Build.VERSION_CODES.O)
@@ -120,22 +93,6 @@ class MainActivity : AppCompatActivity() {
         if (resetFailed) {
             val intent = Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
             startActivity(intent)
-        }
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            Constants.REQUEST_CODE_ENABLE_ADMIN -> {
-                if (resultCode == Activity.RESULT_OK)
-                    prefs.lockModeOn = true
-            }
-
-            Constants.REQUEST_CODE_LAUNCHER_SELECTOR -> {
-                if (resultCode == Activity.RESULT_OK)
-                    resetLauncherViaFakeActivity()
-            }
         }
     }
 }

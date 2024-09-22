@@ -16,7 +16,6 @@ import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import app.olauncher.MainViewModel
@@ -26,14 +25,12 @@ import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentHomeBinding
 import app.olauncher.helper.expandNotificationDrawer
-import app.olauncher.helper.getChangedAppTheme
 import app.olauncher.helper.getUserHandleFromString
 import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.openAlarmApp
 import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
-import app.olauncher.helper.openSearch
 import app.olauncher.helper.showToast
 import app.olauncher.listener.OnSwipeTouchListener
 import app.olauncher.listener.ViewSwipeTouchListener
@@ -75,7 +72,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     override fun onResume() {
         super.onResume()
         populateHomeScreen(false)
-        viewModel.isOlauncherDefault()
         if (prefs.showStatusBar) showStatusBar()
         else hideStatusBar()
     }
@@ -85,7 +81,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
             R.id.lock -> {}
             R.id.clock -> openClockApp()
             R.id.date -> openCalendarApp()
-            R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
             else -> {
                 try { // Launch app
                     val appLocation = view.tag.toString().toInt()
@@ -149,23 +144,9 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun initObservers() {
-        if (prefs.firstSettingsOpen) {
-            binding.firstRunTips.visibility = View.VISIBLE
-            binding.setDefaultLauncher.visibility = View.GONE
-        } else binding.firstRunTips.visibility = View.GONE
-
         viewModel.refreshHome.observe(viewLifecycleOwner) {
             populateHomeScreen(it)
         }
-        viewModel.isOlauncherDefault.observe(viewLifecycleOwner, Observer {
-            if (it != true) {
-                prefs.homeBottomAlignment = false
-                setHomeAlignment()
-            }
-            if (binding.firstRunTips.visibility == View.VISIBLE) return@Observer
-            if (it) binding.setDefaultLauncher.visibility = View.GONE
-            else binding.setDefaultLauncher.visibility = View.VISIBLE
-        })
         viewModel.homeAppAlignment.observe(viewLifecycleOwner) {
             setHomeAlignment(it)
         }
@@ -193,7 +174,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         binding.date.setOnClickListener(this)
         binding.clock.setOnLongClickListener(this)
         binding.date.setOnLongClickListener(this)
-        binding.setDefaultLauncher.setOnClickListener(this)
     }
 
     private fun setHomeAlignment(horizontalGravity: Int = prefs.homeAlignment) {
@@ -358,10 +338,8 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
     }
 
     private fun swipeDownAction() {
-        when (prefs.swipeDownAction) {
-            Constants.SwipeDownAction.SEARCH -> openSearch(requireContext())
-            else -> expandNotificationDrawer(requireContext())
-        }
+        expandNotificationDrawer(requireContext())
+
     }
 
     private fun openSwipeRightApp() {
@@ -386,20 +364,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 prefs.appUserSwipeLeft
             )
         else openCameraApp(requireContext())
-    }
-
-    private fun lockPhone() {
-        requireActivity().runOnUiThread {
-            try {
-                deviceManager.lockNow()
-            } catch (e: SecurityException) {
-                requireContext().showToast(getString(R.string.please_turn_on_double_tap_to_unlock), Toast.LENGTH_LONG)
-                findNavController().navigate(R.id.action_mainFragment_to_settingsFragment)
-            } catch (e: Exception) {
-                requireContext().showToast(getString(R.string.launcher_failed_to_lock_device), Toast.LENGTH_LONG)
-                prefs.lockModeOn = false
-            }
-        }
     }
 
     private fun showStatusBar() {
@@ -465,13 +429,10 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 super.onDoubleClick()
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                     binding.lock.performClick()
-                else if (prefs.lockModeOn)
-                    lockPhone()
             }
 
             override fun onClick() {
                 super.onClick()
-                viewModel.checkForMessages.call()
             }
         }
     }

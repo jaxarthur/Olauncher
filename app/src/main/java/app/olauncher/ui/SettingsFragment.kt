@@ -16,7 +16,6 @@ import android.view.WindowInsets
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -26,15 +25,9 @@ import app.olauncher.R
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
-import app.olauncher.helper.animateAlpha
 import app.olauncher.helper.getColorFromAttr
-import app.olauncher.helper.isAccessServiceEnabled
-import app.olauncher.helper.isDarkThemeOn
-import app.olauncher.helper.isOlauncherDefault
-import app.olauncher.helper.isPackageInstalled
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.showToast
-import app.olauncher.listener.DeviceAdmin
 
 class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListener {
 
@@ -57,15 +50,9 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         viewModel = activity?.run {
             ViewModelProvider(this)[MainViewModel::class.java]
         } ?: throw Exception("Invalid Activity")
-        viewModel.isOlauncherDefault()
-
-        deviceManager = context?.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-        componentName = ComponentName(requireContext(), DeviceAdmin::class.java)
-        checkAdminPermission()
 
         binding.homeAppsNum.text = prefs.homeAppsNum.toString()
         populateKeyboardText()
-        populateLockSettings()
         populateAppThemeText()
         populateTextSize()
         populateAlignment()
@@ -89,9 +76,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         when (view.id) {
             R.id.olauncherHiddenApps -> showHiddenApps()
             R.id.appInfo -> openAppInfo(requireContext(), Process.myUserHandle(), BuildConfig.APPLICATION_ID)
-            R.id.setLauncher -> viewModel.resetLauncherLiveData.call()
-            R.id.toggleLock -> toggleLockMode()
-            R.id.autoShowKeyboard -> toggleKeyboardText()
             R.id.homeAppsNum -> binding.appsNumSelectLayout.visibility = View.VISIBLE
             R.id.alignment -> binding.alignmentSelectLayout.visibility = View.VISIBLE
             R.id.alignmentLeft -> viewModel.updateHomeAlignment(Gravity.START)
@@ -108,8 +92,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.themeDark -> updateTheme(AppCompatDelegate.MODE_NIGHT_YES)
             R.id.themeSystem -> updateTheme(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
             R.id.textSizeValue -> binding.textSizesLayout.visibility = View.VISIBLE
-            R.id.actionAccessibility -> openAccessibilityService()
-            R.id.closeAccessibility -> toggleAccessibilityVisibility(false)
 
             R.id.tvGestures -> binding.flSwipeDown.visibility = View.VISIBLE
 
@@ -154,7 +136,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
 
             R.id.swipeLeftApp -> toggleSwipeLeft()
             R.id.swipeRightApp -> toggleSwipeRight()
-            R.id.toggleLock -> startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
         return true
     }
@@ -162,11 +143,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     private fun initClickListeners() {
         binding.olauncherHiddenApps.setOnClickListener(this)
         binding.scrollLayout.setOnClickListener(this)
-        binding.appInfo.setOnClickListener(this)
-        binding.setLauncher.setOnClickListener(this)
-        binding.aboutOlauncher.setOnClickListener(this)
         binding.autoShowKeyboard.setOnClickListener(this)
-        binding.toggleLock.setOnClickListener(this)
         binding.homeAppsNum.setOnClickListener(this)
         binding.alignment.setOnClickListener(this)
         binding.alignmentLeft.setOnClickListener(this)
@@ -188,9 +165,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.themeDark.setOnClickListener(this)
         binding.themeSystem.setOnClickListener(this)
         binding.textSizeValue.setOnClickListener(this)
-        binding.actionAccessibility.setOnClickListener(this)
-        binding.closeAccessibility.setOnClickListener(this)
-        binding.notWorking.setOnClickListener(this)
 
         binding.maxApps0.setOnClickListener(this)
         binding.maxApps1.setOnClickListener(this)
@@ -214,19 +188,9 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.appThemeText.setOnLongClickListener(this)
         binding.swipeLeftApp.setOnLongClickListener(this)
         binding.swipeRightApp.setOnLongClickListener(this)
-        binding.toggleLock.setOnLongClickListener(this)
     }
 
     private fun initObservers() {
-        if (prefs.firstSettingsOpen) {
-            prefs.firstSettingsOpen = false
-        }
-        viewModel.isOlauncherDefault.observe(viewLifecycleOwner) {
-            if (it) {
-                binding.setLauncher.text = getString(R.string.change_default_launcher)
-                prefs.toShowHintCounter = prefs.toShowHintCounter + 1
-            }
-        }
         viewModel.homeAppAlignment.observe(viewLifecycleOwner) {
             populateAlignment()
         }
@@ -321,63 +285,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         )
     }
 
-    private fun checkAdminPermission() {
-        val isAdmin: Boolean = deviceManager.isAdminActive(componentName)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P)
-            prefs.lockModeOn = isAdmin
-    }
-
-    private fun toggleAccessibilityVisibility(show: Boolean) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-            binding.notWorking.visibility = View.VISIBLE
-        if (isAccessServiceEnabled(requireContext()))
-            binding.actionAccessibility.text = getString(R.string.disable)
-        binding.accessibilityLayout.isVisible = show
-        binding.scrollView.animateAlpha(if (show) 0.5f else 1f)
-    }
-
-    private fun openAccessibilityService() {
-        toggleAccessibilityVisibility(false)
-        // prefs.lockModeOn = true
-        populateLockSettings()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-    }
-
-    private fun toggleLockMode() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            toggleAccessibilityVisibility(true)
-            if (prefs.lockModeOn) {
-                prefs.lockModeOn = false
-                removeActiveAdmin()
-            }
-        } else {
-            val isAdmin: Boolean = deviceManager.isAdminActive(componentName)
-            if (isAdmin) {
-                removeActiveAdmin("Admin permission removed.")
-                prefs.lockModeOn = false
-            } else {
-                val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
-                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
-                intent.putExtra(
-                    DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                    getString(R.string.admin_permission_message)
-                )
-                requireActivity().startActivityForResult(intent, Constants.REQUEST_CODE_ENABLE_ADMIN)
-            }
-        }
-        populateLockSettings()
-    }
-
-    private fun removeActiveAdmin(toastMessage: String? = null) {
-        try {
-            deviceManager.removeActiveAdmin(componentName) // for backward compatibility
-            requireContext().showToast(toastMessage)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
     private fun updateHomeAppsNum(num: Int) {
         binding.homeAppsNum.text = num.toString()
         binding.appsNumSelectLayout.visibility = View.GONE
@@ -389,16 +296,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         if (prefs.textSizeScale == sizeScale) return
         prefs.textSizeScale = sizeScale
         requireActivity().recreate()
-    }
-
-    private fun toggleKeyboardText() {
-        if (prefs.autoShowKeyboard && prefs.keyboardMessageShown.not()) {
-            viewModel.showDialog.postValue(Constants.Dialog.KEYBOARD)
-            prefs.keyboardMessageShown = true
-        } else {
-            prefs.autoShowKeyboard = !prefs.autoShowKeyboard
-            populateKeyboardText()
-        }
     }
 
     private fun updateTheme(appTheme: Int) {
@@ -434,10 +331,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     private fun updateHomeBottomAlignment() {
-        if (viewModel.isOlauncherDefault.value != true) {
-            requireContext().showToast(getString(R.string.please_set_olauncher_as_default_first), Toast.LENGTH_LONG)
-            return
-        }
         prefs.homeBottomAlignment = !prefs.homeBottomAlignment
         populateAlignment()
         viewModel.updateHomeAlignment(prefs.homeAlignment)
@@ -452,20 +345,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.alignmentBottom.text = if (prefs.homeBottomAlignment)
             getString(R.string.bottom_on)
         else getString(R.string.bottom_off)
-    }
-
-    private fun populateLockSettings() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            binding.toggleLock.text = getString(
-                if (isAccessServiceEnabled(requireContext())) R.string.on
-                else R.string.off
-            )
-        } else {
-            binding.toggleLock.text = getString(
-                if (prefs.lockModeOn) R.string.on
-                else R.string.off
-            )
-        }
     }
 
     private fun populateSwipeDownAction() {
@@ -512,7 +391,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
     }
 
     override fun onDestroy() {
-        viewModel.checkForMessages.call()
         super.onDestroy()
     }
 }
