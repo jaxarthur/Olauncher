@@ -93,7 +93,7 @@ fun Context.isEinkDisplay(): Boolean {
     }
 }
 
-fun Context.searchOnPlayStore(query: String? = null): Boolean {
+/* fun Context.searchOnPlayStore(query: String? = null): Boolean {
     return try {
         startActivity(
             Intent(
@@ -116,7 +116,7 @@ fun Context.isPackageInstalled(packageName: String, userHandle: UserHandle = and
     val launcher = getSystemService(Context.LAUNCHER_APPS_SERVICE) as LauncherApps
     val activityInfo = launcher.getActivityList(packageName, userHandle)
     return activityInfo.size > 0
-}
+} */
 
 fun Long.hasBeenDays(days: Int): Boolean =
     ((System.currentTimeMillis() - this) / Constants.ONE_DAY_IN_MILLIS) >= days

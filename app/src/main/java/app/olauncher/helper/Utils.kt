@@ -2,7 +2,6 @@ package app.olauncher.helper
 
 import android.annotation.SuppressLint
 import android.app.SearchManager
-import android.app.WallpaperManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -18,7 +17,6 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Point
 import android.net.Uri
-import android.os.Build
 import android.os.UserHandle
 import android.os.UserManager
 import android.provider.AlarmClock
@@ -164,34 +162,6 @@ fun getDefaultLauncherPackage(context: Context): String {
     } else "android"
 }
 
-fun setPlainWallpaperByTheme(context: Context, appTheme: Int) {
-    when (appTheme) {
-        AppCompatDelegate.MODE_NIGHT_YES -> setPlainWallpaper(context, android.R.color.black)
-        AppCompatDelegate.MODE_NIGHT_NO -> setPlainWallpaper(context, android.R.color.white)
-        else -> {
-            if (context.isDarkThemeOn())
-                setPlainWallpaper(context, android.R.color.black)
-            else setPlainWallpaper(context, android.R.color.white)
-        }
-    }
-}
-
-fun setPlainWallpaper(context: Context, color: Int) {
-    try {
-        val bitmap = Bitmap.createBitmap(1000, 2000, Bitmap.Config.ARGB_8888)
-        bitmap.eraseColor(context.getColor(color))
-        val manager = WallpaperManager.getInstance(context)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            manager.setBitmap(bitmap, null, false, WallpaperManager.FLAG_SYSTEM)
-            manager.setBitmap(bitmap, null, false, WallpaperManager.FLAG_LOCK)
-        } else
-            manager.setBitmap(bitmap)
-        bitmap.recycle()
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
 fun getChangedAppTheme(context: Context, currentAppTheme: Int): Int {
     return when (currentAppTheme) {
         AppCompatDelegate.MODE_NIGHT_YES -> AppCompatDelegate.MODE_NIGHT_NO
@@ -231,108 +201,11 @@ suspend fun getBitmapFromURL(src: String?): Bitmap? {
     }
 }
 
-suspend fun getWallpaperBitmap(originalImage: Bitmap, width: Int, height: Int): Bitmap {
-    return withContext(Dispatchers.IO) {
-
-        val background = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-
-        val originalWidth: Float = originalImage.width.toFloat()
-        val originalHeight: Float = originalImage.height.toFloat()
-
-        val canvas = Canvas(background)
-        val heightScale: Float = height / originalHeight
-        val widthScale: Float = width / originalWidth
-        val scale = maxOf(heightScale, widthScale)
-
-        val (xTranslation, yTranslation) = if (heightScale > widthScale)
-            Pair((width - originalWidth * heightScale) / 2.0f, 0f)
-        else
-            Pair(0f, (height - originalHeight * widthScale) / 2.0f)
-
-        val transformation = Matrix()
-        transformation.postTranslate(xTranslation, yTranslation)
-        transformation.preScale(scale, scale)
-
-        val paint = Paint()
-        paint.isFilterBitmap = true
-        canvas.drawBitmap(originalImage, transformation, paint)
-
-        background
-    }
-}
-
-suspend fun setWallpaper(appContext: Context, url: String): Boolean {
-    return withContext(Dispatchers.IO) {
-        val originalImageBitmap = getBitmapFromURL(url) ?: return@withContext false
-        val wallpaperManager = WallpaperManager.getInstance(appContext)
-
-        val (width, height) = getScreenDimensions(appContext)
-        val scaledBitmap = getWallpaperBitmap(originalImageBitmap, width, height)
-
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_SYSTEM)
-                wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_LOCK)
-            } else
-                wallpaperManager.setBitmap(scaledBitmap)
-        } catch (e: Exception) {
-            return@withContext false
-        }
-
-        try {
-            originalImageBitmap.recycle()
-            scaledBitmap.recycle()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        true
-    }
-}
-
 fun getScreenDimensions(context: Context): Pair<Int, Int> {
     val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val point = Point()
     windowManager.defaultDisplay.getRealSize(point)
     return Pair(point.x, point.y)
-}
-
-suspend fun getTodaysWallpaper(wallType: String): String {
-    return withContext(Dispatchers.IO) {
-        var wallpaperUrl: String
-        try {
-            val month = SimpleDateFormat("M", Locale.ENGLISH).format(Date()) ?: ""
-            val day = SimpleDateFormat("d", Locale.ENGLISH).format(Date()) ?: ""
-            val key = String.format("%s_%s", month, day)
-
-            val url = URL(Constants.URL_WALLPAPERS)
-            val connection: HttpURLConnection = url.openConnection() as HttpURLConnection
-            connection.doInput = true
-            connection.connect()
-
-            val inputStream = connection.inputStream
-            val scanner = Scanner(inputStream)
-            val stringBuffer = StringBuffer()
-            while (scanner.hasNext()) {
-                stringBuffer.append(scanner.nextLine())
-            }
-
-            val json = JSONObject(stringBuffer.toString())
-            val wallpapers = json.getString(key)
-            val wallpapersJson = JSONObject(wallpapers)
-            wallpaperUrl = wallpapersJson.getString(wallType)
-            wallpaperUrl
-
-        } catch (e: Exception) {
-            wallpaperUrl = getBackupWallpaper(wallType)
-            wallpaperUrl
-        }
-    }
-}
-
-fun getBackupWallpaper(wallType: String): String {
-    return if (wallType == Constants.WALL_TYPE_LIGHT)
-        Constants.URL_DEFAULT_LIGHT_WALLPAPER
-    else Constants.URL_DEFAULT_DARK_WALLPAPER
 }
 
 fun openSearch(context: Context) {
@@ -477,28 +350,4 @@ fun View.animateAlpha(alpha: Float = 1.0f) {
         alpha(alpha)
         start()
     }
-}
-
-fun Context.shareApp() {
-    val message = getString(R.string.are_you_using_your_phone_or_is_your_phone_using_you) +
-            "\n" + Constants.URL_OLAUNCHER_PLAY_STORE
-    val sendIntent: Intent = Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, message)
-        type = "text/plain"
-    }
-
-    val shareIntent = Intent.createChooser(sendIntent, null)
-    startActivity(shareIntent)
-}
-
-fun Context.rateApp() {
-    val intent = Intent(
-        Intent.ACTION_VIEW,
-        Uri.parse(Constants.URL_OLAUNCHER_PLAY_STORE)
-    )
-    var flags = Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-    flags = flags or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
-    intent.addFlags(flags)
-    startActivity(intent)
 }

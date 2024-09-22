@@ -81,9 +81,7 @@ class AppDrawerFragment : Fragment() {
     private fun initSearch() {
         binding.search.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                if (query?.startsWith("!") == true)
-                    requireContext().openUrl(Constants.URL_DUCK_SEARCH + query.replace(" ", "%20"))
-                else if (adapter.itemCount == 0) // && requireContext().searchOnPlayStore(query?.trim()).not())
+                if (adapter.itemCount == 0) // && requireContext().searchOnPlayStore(query?.trim()).not())
                     requireContext().openSearch(query?.trim())
                 else
                     adapter.launchFirstInList()

@@ -34,7 +34,6 @@ import app.olauncher.helper.openCalendar
 import app.olauncher.helper.openCameraApp
 import app.olauncher.helper.openDialerApp
 import app.olauncher.helper.openSearch
-import app.olauncher.helper.setPlainWallpaperByTheme
 import app.olauncher.helper.showToast
 import app.olauncher.listener.OnSwipeTouchListener
 import app.olauncher.listener.ViewSwipeTouchListener
@@ -160,10 +159,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
         }
         viewModel.isOlauncherDefault.observe(viewLifecycleOwner, Observer {
             if (it != true) {
-                if (prefs.dailyWallpaper) {
-                    prefs.dailyWallpaper = false
-                    viewModel.cancelWallpaperWorker()
-                }
                 prefs.homeBottomAlignment = false
                 setHomeAlignment()
             }
@@ -426,17 +421,6 @@ class HomeFragment : Fragment(), View.OnClickListener, View.OnLongClickListener 
                 systemUiVisibility = View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_FULLSCREEN
             }
         }
-    }
-
-    private fun changeAppTheme() {
-        if (prefs.dailyWallpaper.not()) return
-        val changedAppTheme = getChangedAppTheme(requireContext(), prefs.appTheme)
-        prefs.appTheme = changedAppTheme
-        if (prefs.dailyWallpaper) {
-            setPlainWallpaperByTheme(requireContext(), changedAppTheme)
-            viewModel.setWallpaperWorker()
-        }
-        requireActivity().recreate()
     }
 
     private fun showLongPressToast() = requireContext().showToast(getString(R.string.long_press_to_select_app))

@@ -18,7 +18,6 @@ import app.olauncher.data.AppModel
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.helper.SingleLiveEvent
-import app.olauncher.helper.WallpaperWorker
 import app.olauncher.helper.getAppsList
 import app.olauncher.helper.isOlauncherDefault
 import app.olauncher.helper.showToast
@@ -215,29 +214,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 //        resetDefaultLauncher(context)
 //        launcherResetFailed.value = getDefaultLauncherPackage(appContext).contains(".")
 //    }
-
-    fun setWallpaperWorker() {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-        val uploadWorkRequest = PeriodicWorkRequestBuilder<WallpaperWorker>(8, TimeUnit.HOURS)
-            .setBackoffCriteria(BackoffPolicy.LINEAR, 1, TimeUnit.HOURS)
-            .setConstraints(constraints)
-            .build()
-        WorkManager
-            .getInstance(appContext)
-            .enqueueUniquePeriodicWork(
-                Constants.WALLPAPER_WORKER_NAME,
-                ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
-                uploadWorkRequest
-            )
-    }
-
-    fun cancelWallpaperWorker() {
-        WorkManager.getInstance(appContext).cancelUniqueWork(Constants.WALLPAPER_WORKER_NAME)
-        prefs.dailyWallpaperUrl = ""
-        prefs.dailyWallpaper = false
-    }
 
     fun updateHomeAlignment(gravity: Int) {
         prefs.homeAlignment = gravity
