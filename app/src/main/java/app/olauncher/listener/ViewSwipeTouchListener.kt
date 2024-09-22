@@ -17,7 +17,7 @@ import kotlin.math.abs
 
 internal open class ViewSwipeTouchListener(c: Context?, v: View) : OnTouchListener {
     private var longPressOn = false
-    private val gestureDetector: GestureDetector
+    private val gestureDetector: GestureDetector = GestureDetector(c, GestureListener(v))
 
     override fun onTouch(view: View, motionEvent: MotionEvent): Boolean {
         when (motionEvent.action) {
@@ -89,8 +89,4 @@ internal open class ViewSwipeTouchListener(c: Context?, v: View) : OnTouchListen
     open fun onLongClick(view: View) {}
     private fun onDoubleClick() {}
     open fun onClick(view: View) {}
-
-    init {
-        gestureDetector = GestureDetector(c, GestureListener(v))
-    }
 }

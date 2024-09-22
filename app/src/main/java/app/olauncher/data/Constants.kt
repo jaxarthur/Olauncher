@@ -55,6 +55,4 @@ object Constants {
 
     const val LONG_PRESS_DELAY_MS = 500L
     const val ONE_HOUR_IN_MILLIS = 3600000L
-
-    const val MIN_ANIM_REFRESH_RATE = 10f
 }
