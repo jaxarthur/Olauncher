@@ -9,11 +9,6 @@
     tools:context=".ui.HomeFragment">
 
     <!-- Placeholder layout for locking screen-->
-    <FrameLayout
-        android:id="@+id/lock"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:contentDescription="@string/lock_layout_description" />
 
     <!-- Clock and calendar-->
     <LinearLayout
@@ -43,9 +38,10 @@
             android:layout_height="wrap_content"
             android:format12Hour="EEE, dd MMM"
             android:format24Hour="EEE, dd MMM"
+            android:lineSpacingExtra="10sp"
             android:paddingHorizontal="3dp"
             android:textSize="@dimen/date_size"
-            tools:text="Thu, 30 Dec" />
+            tools:text="Thu, 30 Dec\n Battery 00%" />
     </LinearLayout>
 
     <!-- Home apps-->

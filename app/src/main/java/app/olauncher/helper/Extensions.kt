@@ -2,7 +2,6 @@ package app.olauncher.helper
 
 import android.app.Activity
 import android.content.Context
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.core.view.WindowCompat
@@ -15,7 +14,6 @@ fun View.hideKeyboard() {
 }
 
 fun View.showKeyboard(show: Boolean = true) {
-    Log.e("Debugging", "Keyboard Shown")
     if (show.not()) return
     if (this.requestFocus()) {
         postDelayed({

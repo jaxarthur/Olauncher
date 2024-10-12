@@ -62,11 +62,6 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        AppCompatDelegate.setDefaultNightMode(prefs.appTheme)
-    }
-
     private fun backToHomeScreen() {
         if (navController.currentDestination?.id != R.id.mainFragment)
             navController.popBackStack(R.id.mainFragment, false)

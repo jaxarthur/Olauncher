@@ -93,10 +93,6 @@ class Prefs(context: Context) {
         get() = prefs.getInt(APP_LABEL_ALIGNMENT, Gravity.START)
         set(value) = prefs.edit().putInt(APP_LABEL_ALIGNMENT, value).apply()
 
-    var showStatusBar: Boolean
-        get() = prefs.getBoolean(STATUS_BAR, false)
-        set(value) = prefs.edit().putBoolean(STATUS_BAR, value).apply()
-
     var dateTimeVisibility: Int
         get() = prefs.getInt(DATE_TIME_VISIBILITY, Constants.DateTime.ON)
         set(value) = prefs.edit().putInt(DATE_TIME_VISIBILITY, value).apply()

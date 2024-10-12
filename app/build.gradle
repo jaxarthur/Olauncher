@@ -14,9 +14,9 @@ android {
     }
 
     defaultConfig {
-        applicationId "app.olauncher"
+        applicationId 'dev.jaxarthur.olauncher'
         minSdk 30
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 85
         versionName "v4.3.3"
 
@@ -29,6 +29,7 @@ android {
             debuggable false
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
         debug {
             debuggable true

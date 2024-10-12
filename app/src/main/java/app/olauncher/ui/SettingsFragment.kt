@@ -6,7 +6,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -47,7 +46,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         populateAppThemeText()
         populateTextSize()
         populateAlignment()
-        populateStatusBar()
         populateDateTime()
         populateSwipeApps()
         populateSwipeDownAction()
@@ -73,7 +71,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
             R.id.alignmentCenter -> viewModel.updateHomeAlignment(Gravity.CENTER)
             R.id.alignmentRight -> viewModel.updateHomeAlignment(Gravity.END)
             R.id.alignmentBottom -> updateHomeBottomAlignment()
-            R.id.statusBar -> toggleStatusBar()
             R.id.dateTime -> binding.dateTimeSelectLayout.visibility = View.VISIBLE
             R.id.dateTimeOn -> toggleDateTime(Constants.DateTime.ON)
             R.id.dateTimeOff -> toggleDateTime(Constants.DateTime.OFF)
@@ -141,7 +138,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         binding.alignmentCenter.setOnClickListener(this)
         binding.alignmentRight.setOnClickListener(this)
         binding.alignmentBottom.setOnClickListener(this)
-        binding.statusBar.setOnClickListener(this)
         binding.dateTime.setOnClickListener(this)
         binding.dateTimeOn.setOnClickListener(this)
         binding.dateTimeOff.setOnClickListener(this)
@@ -212,21 +208,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         }
     }
 
-    private fun toggleStatusBar() {
-        prefs.showStatusBar = !prefs.showStatusBar
-        populateStatusBar()
-    }
-
-    private fun populateStatusBar() {
-        if (prefs.showStatusBar) {
-            showStatusBar()
-            binding.statusBar.text = getString(R.string.on)
-        } else {
-            hideStatusBar()
-            binding.statusBar.text = getString(R.string.off)
-        }
-    }
-
     private fun toggleDateTime(selected: Int) {
         prefs.dateTimeVisibility = selected
         populateDateTime()
@@ -241,14 +222,6 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
                 else -> R.string.off
             }
         )
-    }
-
-    private fun showStatusBar() {
-        requireActivity().window.insetsController?.show(WindowInsets.Type.statusBars())
-    }
-
-    private fun hideStatusBar() {
-        requireActivity().window.insetsController?.hide(WindowInsets.Type.statusBars())
     }
 
     private fun showHiddenApps() {
@@ -280,6 +253,7 @@ class SettingsFragment : Fragment(), View.OnClickListener, View.OnLongClickListe
         if (AppCompatDelegate.getDefaultNightMode() == appTheme) return
         prefs.appTheme = appTheme
         populateAppThemeText(appTheme)
+        AppCompatDelegate.setDefaultNightMode(appTheme)
     }
 
     private fun populateAppThemeText(appTheme: Int = prefs.appTheme) {
